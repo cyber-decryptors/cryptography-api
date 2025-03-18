@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 import base64
+import hashlib
 
 app = FastAPI()
 
@@ -34,14 +35,14 @@ class EncryptedData(BaseModel):
     encrypted_data: str
 
 
-class HashData(BaseModel):
+class HashRequest(BaseModel):
     data: str
+    algorithm: str
 
-
-class VerifyHashData(BaseModel):
+class VerifyHashRequest(BaseModel):
     data: str
+    algorithm: str
     hash_value: str
-
 
 @app.get("/keys")
 def get_keys():
@@ -81,28 +82,48 @@ def decrypt_message(encrypted_data: EncryptedData):
         return {"decrypted_message": decrypted.decode()}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Decryption failed. Invalid input.")
-
-
-@app.post("/hash")
-def hash_message(data: HashData):
-    """Generate a SHA-256 hash of a message."""
-    digest = hashes.Hash(hashes.SHA256())
-    digest.update(data.data.encode())
-    hashed_value = base64.b64encode(digest.finalize()).decode()
-    return {"hash": hashed_value}
-
-
-@app.post("/verify-hash")
-def verify_hash(data: VerifyHashData):
-    """Verify if a given message matches a hash."""
-    digest = hashes.Hash(hashes.SHA256())
-    digest.update(data.data.encode())
-    computed_hash = base64.b64encode(digest.finalize()).decode()
     
-    if computed_hash == data.hash_value:
-        return {"message": "Hash matches", "verified": True}
-    else:
-        return {"message": "Hash does not match", "verified": False}
+
+##### Sadeep Added #####################################################
+
+# Function to get hash
+def get_hash(data: str, algorithm: str):
+    algorithm = algorithm.upper()
+    hash_functions = {
+        "SHA-224": hashlib.sha224,
+        "SHA-256": hashlib.sha256,
+        "SHA-384": hashlib.sha384,
+        "SHA-512": hashlib.sha512,
+    }
+
+    if algorithm not in hash_functions:
+        raise HTTPException(status_code=400, detail="Invalid hashing algorithm. Use 'SHA-224', 'SHA-256', 'SHA-384', or 'SHA-512'.")
+
+    return hash_functions[algorithm](data.encode()).digest()
+
+### ====== Hashing ====== ###
+@app.post("/generate-hash/")
+def generate_hash(request: HashRequest):
+    hash_value = get_hash(request.data, request.algorithm)
+
+    return {
+        "hash_value": base64.b64encode(hash_value).decode(),
+        "algorithm": request.algorithm.upper()
+    }
+
+
+### ====== Verifying Hashing ====== ###
+@app.post("/verify-hash/")
+def verify_hash(request: VerifyHashRequest):
+    computed_hash = get_hash(request.data, request.algorithm)
+    computed_hash_b64 = base64.b64encode(computed_hash).decode()  # Convert computed hash to base64
+
+    is_valid = computed_hash_b64 == request.hash_value  # Compare with given hash
+
+    return {
+        "is_valid": is_valid,
+        "message": "Hash matches the data." if is_valid else "Hash does not match."
+    }
 
 
 if __name__ == "__main__":

@@ -5,11 +5,14 @@ import base64
 # Dictionary to store keys
 rsa_keys = {}
 
-def generate_rsa_key():
-    """Generate a new RSA key pair."""
+def generate_rsa_key(key_size):
+    """Generate a new RSA key pair with a given key size."""
+    if key_size not in [1024, 2048, 3072, 4096]:  # Allowed sizes
+        return {"error": "Invalid key size. Choose from 1024, 2048, 3072, 4096"}, 400
+
     private_key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=2048
+        key_size=key_size
     )
     public_key = private_key.public_key()
 
@@ -66,3 +69,12 @@ def decrypt_rsa(key_id, ciphertext):
     )
 
     return decrypted.decode()
+
+
+
+key_id, public_key, private_key = generate_rsa_key(1024)  # Use 1024, 2048, 3072, or 4096
+print("Key ID:", key_id)
+encrypted_text = encrypt_rsa(key_id, "Hello RSA!")
+print("Encrypted:", encrypted_text)
+decrypted_text = decrypt_rsa(key_id, encrypted_text)
+print("Decrypted:", decrypted_text)

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
@@ -6,24 +6,37 @@ import base64
 
 app = FastAPI()
 
+# Dictionary to store keys
 rsa_keys = {}
 
-class RSAKeyRequest(BaseModel):
+# Request Models
+class KeyGenerationRequest(BaseModel):
+    key_type: str  # Only "RSA" is supported for now
     key_size: int
 
-class MessageRequest(BaseModel):
+class EncryptionRequest(BaseModel):
     key_id: str
-    message: str
+    plaintext: str
+    algorithm: str  # Only "RSA" is supported for now
 
-@app.post("/generate_rsa_key")
-def generate_rsa_key(request: RSAKeyRequest):
-    key_size = request.key_size
-    if key_size not in [1024, 2048, 4096]:
-        return {"error": "Invalid key size. Supported sizes: 1024, 2048, 4096"}
+class DecryptionRequest(BaseModel):
+    key_id: str
+    ciphertext: str
+    algorithm: str  # Only "RSA" is supported for now
+
+# Key Generation Endpoint
+@app.post("/generate-key")
+def generate_key(request: KeyGenerationRequest):
+    """Generate an RSA key pair with a specified size."""
+    if request.key_type.upper() != "RSA":
+        raise HTTPException(status_code=400, detail="Only RSA encryption is supported")
+    
+    if request.key_size not in [1024, 2048, 3072, 4096]:
+        raise HTTPException(status_code=400, detail="Invalid key size. Choose from 1024, 2048, 3072, 4096")
 
     private_key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=key_size
+        key_size=request.key_size
     )
     public_key = private_key.public_key()
 
@@ -46,21 +59,22 @@ def generate_rsa_key(request: RSAKeyRequest):
 
     return {
         "key_id": key_id,
-        "public_key": base64.b64encode(public_pem.encode()).decode(),
-        "private_key": base64.b64encode(private_pem.encode()).decode()
+        "key_value": base64.b64encode(public_pem.encode()).decode()
     }
 
+# Encryption Endpoint
 @app.post("/encrypt")
-def encrypt_rsa(request: MessageRequest):
-    key_id = request.key_id
-    message = request.message
+def encrypt_message(request: EncryptionRequest):
+    """Encrypt a message using RSA."""
+    if request.algorithm.upper() != "RSA":
+        raise HTTPException(status_code=400, detail="Only RSA encryption is supported")
 
-    if key_id not in rsa_keys:
-        return {"error": "Key not found"}
+    if request.key_id not in rsa_keys:
+        raise HTTPException(status_code=404, detail="Key not found")
 
-    public_key = rsa_keys[key_id]["public_key"]
+    public_key = rsa_keys[request.key_id]["public_key"]
     encrypted = public_key.encrypt(
-        message.encode(),
+        request.plaintext.encode(),
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -68,19 +82,21 @@ def encrypt_rsa(request: MessageRequest):
         )
     )
 
-    return {"encrypted_message": base64.b64encode(encrypted).decode()}
+    return {"ciphertext": base64.b64encode(encrypted).decode()}
 
+# Decryption Endpoint
 @app.post("/decrypt")
-def decrypt_rsa(request: MessageRequest):
-    key_id = request.key_id
-    ciphertext = request.message
+def decrypt_message(request: DecryptionRequest):
+    """Decrypt a message using RSA."""
+    if request.algorithm.upper() != "RSA":
+        raise HTTPException(status_code=400, detail="Only RSA decryption is supported")
 
-    if key_id not in rsa_keys:
-        return {"error": "Key not found"}
+    if request.key_id not in rsa_keys:
+        raise HTTPException(status_code=404, detail="Key not found")
 
-    private_key = rsa_keys[key_id]["private_key"]
+    private_key = rsa_keys[request.key_id]["private_key"]
     decrypted = private_key.decrypt(
-        base64.b64decode(ciphertext),
+        base64.b64decode(request.ciphertext),
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -88,4 +104,4 @@ def decrypt_rsa(request: MessageRequest):
         )
     )
 
-    return {"decrypted_message": decrypted.decode()}
+    return {"plaintext": decrypted.decode()}

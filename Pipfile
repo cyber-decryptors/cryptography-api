@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 flask = "*"
 marshmallow = "*"
+pydantic = "*"
+cryptography = "*"
 
 [dev-packages]
 

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
@@ -10,20 +10,16 @@ keys = {}
 
 def generate_key(key_type, key_size):
 
-    if key_type == "AES":
-        if key_size not in [128, 192, 256]:
-            return jsonify({"error": "Invalid key size. Supported sizes are 128, 192, 256"}), 400
+    if key_size not in [128, 192, 256]:
+        return {"error": "Invalid key size. Supported sizes are 128, 192, 256"}
 
-        # Generate a random key
-        key = os.urandom(key_size // 8)
-        key_id = str(len(keys) + 1)
-        keys[key_id] = key
+    # Generate a random key
+    key = os.urandom(key_size // 8)
+    key_id = str(len(keys) + 1)
+    keys[key_id] = key
 
-        # Return the key ID and the Base64-encoded key
-        return key_id, base64.b64encode(key).decode('utf-8')
-
-    else:
-        return jsonify({"error": "Invalid key type"}), 400
+    # Return the key ID and the Base64-encoded key
+    return key_id, base64.b64encode(key).decode('utf-8')
     
 def encrypt(key_id, plaintext, algorithm):
 

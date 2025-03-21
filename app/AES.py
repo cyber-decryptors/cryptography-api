@@ -5,8 +5,6 @@ from cryptography.hazmat.primitives import padding
 import os
 import base64
 
-keys = {}
-
 def generate_key(key_size):
 
     if key_size not in [128, 192, 256]:
@@ -14,19 +12,12 @@ def generate_key(key_size):
 
     # Generate a random key
     key = os.urandom(key_size // 8)
-    key_id = str(len(keys) + 1)
-    keys[key_id] = key
 
-    # Return the key ID and the Base64-encoded key
-    return {"key_id": key_id, "key_value": base64.b64encode(key).decode('utf-8')}
+    # Return key
+    return key
 
     
-def encrypt(key_id, plaintext):
-
-    if key_id not in keys:
-        return {"error": "Key not found"}
-
-    key = keys[key_id]
+def encrypt(key, plaintext):
 
     # Pad the plaintext to be a multiple of the block size
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -43,12 +34,7 @@ def encrypt(key_id, plaintext):
     return {"ciphertext": base64.b64encode(iv + ciphertext).decode('utf-8')}
 
 
-def decrypt(key_id, ciphertext):
-
-    if key_id not in keys:
-        return {"error": "Key not found"}
-
-    key = keys[key_id]
+def decrypt(key, ciphertext):
 
     # Decode the Base64-encoded ciphertext
     decoded_ciphertext = base64.b64decode(ciphertext.encode('utf-8'))
@@ -65,7 +51,6 @@ def decrypt(key_id, ciphertext):
     # Unpad the plaintext
     unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
     plaintext = unpadder.update(padded_plaintext) + unpadder.finalize()
-
 
     return {"plaintext": plaintext.decode('utf-8')}
 

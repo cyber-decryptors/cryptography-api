@@ -8,6 +8,9 @@ flask = "*"
 marshmallow = "*"
 pydantic = "*"
 cryptography = "*"
+flasgger = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
 
 [dev-packages]
 

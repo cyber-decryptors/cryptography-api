@@ -6,6 +6,7 @@ import base64
 # Dictionary to store keys
 rsa_keys = {}
 
+
 def generate_key(key_size):
     if key_size not in [1024, 2048, 3072, 4096]:
         return {"error": "Invalid key size. Supported sizes are 1024, 2048, 3072, 4096"}
@@ -16,16 +17,25 @@ def generate_key(key_size):
     )
     public_key = private_key.public_key()
 
-    key_id = str(len(rsa_keys) + 1)
-    rsa_keys[key_id] = {"private_key": private_key, "public_key": public_key}
-
+    # Serialize public key to PEM and Base64-encode it
     public_pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
-    ).decode()
+    )
+    public_key_base64 = base64.b64encode(public_pem).decode('utf-8')
 
-    return {"key_id": key_id, "key_value": base64.b64encode(public_pem.encode()).decode('utf-8')}
+    # Serialize private key to PEM and Base64-encode it
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    private_key_base64 = base64.b64encode(private_pem).decode('utf-8')
 
+    return {
+        "public_key": public_key_base64,
+        "private_key": private_key_base64
+    }
 
 def encrypt(key_id, plaintext):
         

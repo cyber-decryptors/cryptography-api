@@ -9,17 +9,17 @@ hash_functions = {
     "SHA-384": hashlib.sha384,
     "SHA-512": hashlib.sha512,
     "MD5"    : hashlib.md5,
-    "BLAKE2b": hashlib.blake2b,
-    "BLAKE2s": hashlib.blake2s
+    "BLAKE2B": hashlib.blake2b,
+    "BLAKE2S": hashlib.blake2s
 }
 
 # Function to get hash
 def get_hash(data: str, algorithm: str):
-    algorithm = algorithm.upper()
     return hash_functions[algorithm](data.encode()).digest()
 
 ### ====== Hashing ====== ###
 def generate_hash(data, algorithm):
+    algorithm = algorithm.upper()
     
     if algorithm not in hash_functions:
         return {"error": "Invalid hashing algorithm. Use 'SHA-224', 'SHA-256', 'SHA-384', 'SHA-512', 'MD5' , 'BLAKE2b' or 'BLAKE2s'. "}
@@ -28,12 +28,13 @@ def generate_hash(data, algorithm):
 
     return {
         "hash_value": base64.b64encode(hash_value).decode(),
-        "algorithm": algorithm.upper()
+        "algorithm": algorithm
     }
 
 
 ### ====== Verifying Hashing ====== ###
 def verify_hash(data, algorithm, hash_value):
+    algorithm = algorithm.upper()
 
     if algorithm not in hash_functions:
         return {"error": "Invalid hashing algorithm. Use 'SHA-224', 'SHA-256', 'SHA-384', 'SHA-512', 'MD5' , 'BLAKE2b' or 'BLAKE2s'. "}

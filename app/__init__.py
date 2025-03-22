@@ -12,7 +12,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)  # Initialize after app is created
 
 with app.app_context():
-    from app.database import Key
+    from app.database import SymmetricKey, AsymmetricKey
     db.create_all()  # Ensures tables are created
 
 from app import routes

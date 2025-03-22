@@ -3,8 +3,6 @@ from cryptography.hazmat.primitives import serialization, hashes
 import base64
 
 # Dictionary to store RSA key pairs as Base64 strings
-rsa_keys = {}
-
 def generate_key(key_size):
     if key_size not in [1024, 2048, 3072, 4096]:
         return {"error": "Invalid key size. Supported sizes are 1024, 2048, 3072, 4096"}
@@ -30,24 +28,15 @@ def generate_key(key_size):
     )
     private_key_base64 = base64.b64encode(private_pem).decode('utf-8')
 
-    # Save the Base64 strings into the dictionary
-    key_id = str(len(rsa_keys) + 1)
-    rsa_keys[key_id] = {
-        "public_key": public_key_base64,
-        "private_key": private_key_base64
-    }
-
     return {
         "public_key": public_key_base64,
         "private_key": private_key_base64
     }
 
 def encrypt(keys, plaintext):
-    if key_id not in rsa_keys:
-        return {"error": "Key not found"}
-
+    
     try:
-        public_key_base64 = rsa_keys[key_id]["public_key"]
+        public_key_base64 = keys["public_key"]
         public_key_pem = base64.b64decode(public_key_base64)
 
         public_key = serialization.load_pem_public_key(public_key_pem)
@@ -64,12 +53,10 @@ def encrypt(keys, plaintext):
     except Exception as e:
         return {"error": str(e)}
 
-def decrypt(key_id, ciphertext):
-    if key_id not in rsa_keys:
-        return {"error": "Key not found"}
+def decrypt(keys, ciphertext):
 
     try:
-        private_key_base64 = rsa_keys[key_id]["private_key"]
+        private_key_base64 = keys["private_key"]
         private_key_pem = base64.b64decode(private_key_base64)
 
         private_key = serialization.load_pem_private_key(

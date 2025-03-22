@@ -34,17 +34,24 @@ class AsymmetricKey(db.Model):
 
 def store_key(key_type, key_id, key_value):
 
-    Key = SymmetricKey if key_type == "AES" else AsymmetricKey
-    
-    new_key = Key(
-        key_id=key_id,
-        key_type=key_type,
-        key_value=key_value
-    )
+    if key_type == "AES":
+        new_key = SymmetricKey(
+            key_id=key_id,
+            key_type=key_type,
+            key_value=key_value
+        )
+    elif key_type == "RSA":
+        new_key = AsymmetricKey(
+            key_id=key_id,
+            key_type=key_type,
+            key_public=key_value["public_key"],
+            key_private=key_value["private_key"]
+        )
+
     db.session.add(new_key)
     db.session.commit()
 
-    return new_key
+    return new_key.get_response()
 
 
 def get_key(key_type, key_id):

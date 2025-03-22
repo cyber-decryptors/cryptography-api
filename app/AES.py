@@ -14,10 +14,12 @@ def generate_key(key_size):
     key = os.urandom(key_size // 8)
 
     # Return key
-    return key
+    return base64.b64encode(key).decode('utf-8')
 
     
 def encrypt(key, plaintext):
+    # Decode the base64 key
+    key = base64.b64decode(key.encode('utf-8'))
 
     # Pad the plaintext to be a multiple of the block size
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
@@ -35,6 +37,8 @@ def encrypt(key, plaintext):
 
 
 def decrypt(key, ciphertext):
+    # Decode the base64 key
+    key = base64.b64decode(key.encode('utf-8'))
 
     # Decode the Base64-encoded ciphertext
     decoded_ciphertext = base64.b64decode(ciphertext.encode('utf-8'))

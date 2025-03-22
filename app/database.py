@@ -1,6 +1,6 @@
 from app import db
 
-class Key(db.Model):
+class SymmetricKey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key_id = db.Column(db.String, nullable=False)
     key_type = db.Column(db.String(10), nullable=False)
@@ -11,9 +11,30 @@ class Key(db.Model):
     
     def get_response(self):
         return {"key_id": self.key_id, "key_value": self.key_value}
+    
+
+class AsymmetricKey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key_id = db.Column(db.String, nullable=False)
+    key_type = db.Column(db.String(10), nullable=False)
+    key_public = db.Column(db.String, nullable=False)  
+    key_private = db.Column(db.String, nullable=False)  
+
+    def get_value(self):
+        # For looking up key
+        return {
+            "private_key": self.key_private,
+            "public_key": self.key_public
+        }
+    
+    def get_response(self):
+        # Response for key generation request
+        return {"key_id": self.key_id, "key_value": self.key_public}
 
 
 def store_key(key_type, key_id, key_value):
+
+    Key = SymmetricKey if key_type == "AES" else AsymmetricKey
     
     new_key = Key(
         key_id=key_id,
@@ -27,6 +48,8 @@ def store_key(key_type, key_id, key_value):
 
 
 def get_key(key_type, key_id):
+
+    Key = SymmetricKey if key_type == "AES" else AsymmetricKey
 
     key = Key.query.filter_by(key_id=key_id, key_type=key_type).first()
     if not key:

@@ -38,12 +38,11 @@ def generate_key(key_size):
     }
 
     return {
-        "key_id": key_id,
         "public_key": public_key_base64,
         "private_key": private_key_base64
     }
 
-def encrypt(key_id, plaintext):
+def encrypt(keys, plaintext):
     if key_id not in rsa_keys:
         return {"error": "Key not found"}
 

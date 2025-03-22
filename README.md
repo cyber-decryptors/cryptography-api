@@ -1,4 +1,4 @@
-# Steps to install and run
+# Steps to install and run from source
 
 Initially:
 ```

@@ -159,3 +159,11 @@ def verify_hash():
     return handle_request(VerifyHashRequest, lambda req: hashing.verify_hash(req.data, req.algorithm, req.hash_value))
 
 
+@app.get("/")
+def home():
+    return (
+        "<h2>Encryption and Hashing API</h2>"
+        "<p>Visit the <a href='/apidocs/'>API Documentation</a> for usage details.</p>"
+    )
+
+

@@ -26,7 +26,7 @@ def generate_key(key_type, key_size):
 def encrypt(key_id, plaintext, algorithm):
     # Check whether algorithm is supported
     if algorithm not in ["AES", "RSA"]: 
-        return {"error": "Invalid key type. AES and RSA are supported."}
+        return {"error": "Invalid algorithm. AES and RSA are supported."}
 
     # Look up key from the database
     key = database.get_key(algorithm, key_id)
@@ -42,7 +42,7 @@ def encrypt(key_id, plaintext, algorithm):
 def decrypt(key_id, ciphertext, algorithm):
     # Check whether algorithm is supported
     if algorithm not in ["AES", "RSA"]: 
-        return {"error": "Invalid key type. AES and RSA are supported."}
+        return {"error": "Invalid algorithm. AES and RSA are supported."}
     
     # Look up key from the database
     key = database.get_key(algorithm, key_id)

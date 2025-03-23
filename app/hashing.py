@@ -27,7 +27,7 @@ def generate_hash(data, algorithm):
     hash_value = get_hash(data, algorithm)
 
     return {
-        "hash_value": base64.b64encode(hash_value).decode(),
+        "hash_value": base64.b64encode(hash_value).decode(),  # Convert computed hash to base64
         "algorithm": algorithm
     }
 

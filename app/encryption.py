@@ -2,6 +2,8 @@ from app import AES, RSA
 from app import database
 import uuid
 
+# These functions are a common interface for AES and RSA encryption.
+
 def generate_key(key_type, key_size):
 
     if key_type == "AES":
@@ -22,7 +24,7 @@ def generate_key(key_type, key_size):
 
     
 def encrypt(key_id, plaintext, algorithm):
-
+    # Look up key from the database
     key = database.get_key(algorithm, key_id)
     if not key:
         return {"error": "Key not found"}
@@ -36,7 +38,7 @@ def encrypt(key_id, plaintext, algorithm):
     
     
 def decrypt(key_id, ciphertext, algorithm):
-
+    # Look up key from the database
     key = database.get_key(algorithm, key_id)
     if not key:
         return {"error": "Key not found"}

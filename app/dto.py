@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+# Schemas for requests and responses.
+
 class KeyGenerationRequest(BaseModel):
     key_type: str = Field(..., description="Type of the key (AES or RSA)")
     key_size: int = Field(..., description="Size of the key in bits (128, 192, 256 for AES and 1024, 2048, 3072, 4096 for RSA)")

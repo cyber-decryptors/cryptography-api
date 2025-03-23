@@ -6,7 +6,7 @@ from app import encryption, hashing
 from flasgger import swag_from
 
 def handle_request(request_model, handler):
-    """ Generic function to validate request and call the handler. """
+    # Generic function to validate request and call the handler. 
     try:
         req_data = request.get_json()
         req = request_model(**req_data)  # Validate input
@@ -159,6 +159,7 @@ def verify_hash():
     return handle_request(VerifyHashRequest, lambda req: hashing.verify_hash(req.data, req.algorithm, req.hash_value))
 
 
+# Default endpoint
 @app.get("/")
 def home():
     return (
